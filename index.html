@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Science, Mathematics & Technology Club — Auth</title>
+  <meta name="description" content="Science, Mathematics & Technology Club at St. Joseph's College Layibi, Gulu City, Uganda." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Supabase JS Client CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    /* ----------------------------------------------------------------
+     * Global Styles & Variables (Kept for consistency and responsiveness)
+     * ---------------------------------------------------------------- */
+    :root{
+      --bg: #0f172a;          /* slate-900 */
+      --text: #e5e7eb;        /* gray-200 */
+      --muted: #cbd5e1;       /* slate-300 */
+      --card: #111827;        /* gray-900 */
+      --accent1: #ff6b6b;     /* coral red */
+      --accent2: #4f46e5;     /* indigo-600 */
+      --accent3: #22c55e;     /* emerald-500 */
+      --accent4: #f59e0b;     /* amber-500 */
+      --accent5: #06b6d4;     /* cyan-500 */
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0; padding:0; background:var(--bg); color:var(--text); font-family:Poppins, Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;}
+    a{color:var(--accent5); text-decoration:none}
+    a:hover{opacity:.9}
+    .wrap{max-width:1200px; margin:0 auto; padding:0 20px}
+    header{
+      position:sticky; top:0; z-index:1000;
+      backdrop-filter:saturate(140%) blur(8px);
+      background:linear-gradient(90deg, rgba(79,70,229,.7), rgba(6,182,212,.6));
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    nav{display:flex; align-items:center; justify-content:space-between; padding:14px 0}
+    .brand{display:flex; align-items:center; gap:14px}
+    .logo{
+      width:52px; height:52px; border-radius:50%;
+      background: conic-gradient(from 180deg at 50% 50%, #4f46e5, #06b6d4, #22c55e, #f59e0b, #ff6b6b, #4f46e5);
+      display:grid; place-items:center; box-shadow:var(--shadow);
+      flex-shrink: 0;
+    }
+    .logo svg{width:34px; height:34px; filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))}
+    .title-group{line-height:1; min-width: 0;}
+    .title{font-weight:800; letter-spacing:.3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+    .subtitle{font-size:.9rem; color:#e2e8f0}
+    .menu{display:flex; gap:18px; flex-wrap:wrap; margin-right: 15px;}
+    .menu a{font-weight:600; color:white; transition:opacity .2s}
+    .school-badge{
+      display:flex; align-items:center; gap:8px; font-weight:600; color:white;
+      padding:8px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.25);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+      transition: opacity .2s;
+    }
+    .badge-icon{
+      width:22px; height:22px; border-radius:6px; background:white; color:#1f2937; display:grid; place-items:center; font-weight:800;
+    }
+
+    .hero{
+      position:relative; overflow:hidden;
+      background:
+        radial-gradient(1200px 600px at -10% 0%, rgba(79,70,229,.25), transparent 60%),
+        radial-gradient(1200px 600px at 110% 20%, rgba(6,182,212,.25), transparent 60%),
+        radial-gradient(800px 400px at 50% 120%, rgba(255,107,107,.20), transparent 60%);
+      padding:70px 0 40px;
+    }
+    .hero-inner{display:grid; grid-template-columns:1.2fr 1fr; gap:30px; align-items:center}
+    .hero h1{font-size:2.4rem; margin:0 0 10px}
+    .hero p{color:var(--muted); margin:0 0 16px}
+    .cta{display:flex; gap:12px; flex-wrap:wrap; margin-top:16px}
+    .btn{
+      padding:12px 18px; border-radius:12px; font-weight:700;
+      border:1px solid rgba(255,255,255,.2); box-shadow:var(--shadow);
+      cursor:pointer; transition:transform .1s, opacity .2s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn.primary{background:linear-gradient(90deg, var(--accent2), var(--accent5)); color:white}
+    .btn.secondary{background:linear-gradient(90deg, var(--accent4), var(--accent3)); color:#0b1020}
+
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow)}
+    .triplet{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
+    .chip{display:inline-block; padding:6px 10px; border-radius:999px; font-size:.8rem; font-weight:700; margin-bottom:8px}
+    .chip.red{background:rgba(255,107,107,.18); color:#fecaca; border:1px solid rgba(255,107,107,.4)}
+    .chip.blue{background:rgba(79,70,229,.18); color:#c7d2fe; border:1px solid rgba(79,70,229,.4)}
+    .chip.yellow{background:rgba(245,158,11,.18); color:#fde68a; border:1px solid rgba(245,158,11,.4)}
+    .section{padding:40px 0}
+    h2{margin:0 0 12px; font-size:1.6rem}
+    h3{margin:0 0 8px; font-size:1.1rem}
+    .grid-2{display:grid; grid-template-columns:repeat(2,1fr); gap:18px}
+    .grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
+    .list{display:grid; gap:8px}
+    .list .item{display:flex; align-items:flex-start; gap:10px}
+    .dot{width:10px; height:10px; border-radius:50%; background:var(--accent5); margin-top:8px; flex-shrink:0}
+    .member{display:flex; align-items:center; gap:10px}
+    .avatar{width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg, #4f46e5, #06b6d4); display:grid; place-items:center; color:white; font-weight:800; flex-shrink:0}
+
+    .media-card img, .media-card video, .media-card iframe{
+      width:100%; height:220px; object-fit:cover; border-radius:12px; border:1px solid rgba(255,255,255,.1)
+    }
+
+    /* Comments & Forms */
+    .comment-form input, .comment-form textarea{
+      width:100%; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.15);
+      background:rgba(255,255,255,.06); color:var(--text); margin-bottom:10px;
+    }
+    .comment-form input:disabled, .comment-form textarea:disabled {
+      opacity: 0.5; cursor: not-allowed;
+    }
+    .comment{padding:12px; border-radius:12px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09)}
+    .small{font-size:.9rem; color:var(--muted)}
+    .mt-3 { margin-top: 12px; }
+
+    /* Auth Button in Header */
+    #auth-button {
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      background: var(--accent3);
+      color: var(--card);
+      border: none;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    #user-display {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--muted);
+        padding: 8px 0;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Modal Styling */
+    .modal-backdrop {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.7); z-index: 2000;
+        display: none; place-items: center;
+    }
+    .modal-backdrop.visible { display: grid; }
+    .modal-content {
+        background: var(--card); padding: 30px; border-radius: var(--radius);
+        width: 90%; max-width: 400px; box-shadow: var(--shadow);
+        border: 1px solid rgba(255,255,255,.1);
+    }
+    .modal-content h3 { color: var(--accent5); margin-top: 0; }
+    .modal-content .tab-content.hidden { display: none; }
+    .tab-buttons { display: flex; gap: 8px; margin-bottom: 20px; }
+    .tab-buttons button {
+        background: rgba(255,255,255,.1); color: var(--text); padding: 8px 15px;
+        border-radius: 8px; border: none; cursor: pointer; transition: background .2s;
+    }
+    .tab-buttons button.active {
+        background: var(--accent2); font-weight: 700;
+    }
+
+    /* Loading Indicator for Database */
+    .loading-indicator {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        color: var(--accent5);
+        font-size: 0.9rem;
+    }
+    .loading-indicator.visible {
+        display: flex;
+    }
+    .spinner {
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top: 2px solid var(--accent5);
+        width: 14px;
+        height: 14px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+
+    footer{padding:25px 0; color:var(--muted); font-size:.9rem}
+
+    /* ----------------------------------------------------------------
+     * Media Queries for Mobile Responsiveness
+     * ---------------------------------------------------------------- */
+    @media (max-width: 900px){
+      /* Layout Stacking */
+      .hero-inner{grid-template-columns:1fr}
+      .triplet{grid-template-columns:1fr}
+      .grid-2{grid-template-columns:1fr}
+      .grid-3{grid-template-columns:1fr}
+      .section{padding:30px 0}
+      .hero h1 { font-size: 1.8rem; }
+      .hero p { font-size: 1rem; }
+
+      /* Navigation Adaption */
+      nav {
+          flex-direction: row; /* Keep elements in a row */
+          align-items: center;
+          gap: 10px;
+          padding: 10px 0;
+          flex-wrap: wrap;
+      }
+      .menu {
+          display: none; /* Hide main menu for simplicity on tiny screens */
+      }
+      .brand {
+          flex: 1; /* Brand takes up available space */
+      }
+      .title-group {
+          max-width: calc(100% - 70px); /* Limit size */
+      }
+      .school-badge {
+          display: none; 
+      }
+      #auth-button {
+          padding: 8px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Modal Backdrop for Sign-In/Sign-Up -->
+  <div class="modal-backdrop" id="auth-modal">
+      <div class="modal-content">
+          <div class="tab-buttons" id="auth-tabs">
+              <button data-tab="signin" class="active">Sign In</button>
+              <button data-tab="signup">Sign Up</button>
+          </div>
+
+          <!-- Sign In Tab -->
+          <div id="signin-tab" class="tab-content">
+              <h3>Sign In to Comment</h3>
+              <p><em>Sign-up first before signing-in.</em></p>
+              <form id="signin-form" class="comment-form">
+                  <input type="email" id="signin-email" placeholder="Email" required />
+                  <input type="password" id="signin-password" placeholder="Password" required />
+                  <p id="signin-message" class="small text-red-400" style="color:var(--accent1); margin-bottom: 15px;"></p>
+                  <div class="cta" style="margin-top:0; justify-content:flex-end;">
+                      <button type="submit" class="btn primary">Sign In</button>
+                  </div>
+              </form>
+          </div>
+
+          <!-- Sign Up Tab -->
+          <div id="signup-tab" class="tab-content hidden">
+              <h3>Create Your Account</h3>
+              <form id="signup-form" class="comment-form">
+                  <input type="email" id="signup-email" placeholder="Email" required />
+                  <input type="password" id="signup-password" placeholder="Password (min 6 characters)" required />
+                  <p id="signup-message" class="small text-red-400" style="color:var(--accent1); margin-bottom: 15px;"></p>
+                  <div class="cta" style="margin-top:0; justify-content:flex-end;">
+                      <button type="submit" class="btn primary">Sign Up</button>
+                  </div>
+              </form>
+          </div>
+          
+          <div class="small mt-3" style="text-align: center;">
+              <a href="#" id="close-modal-btn">Close Window</a>
+          </div>
+      </div>
+  </div>
+
+
+  <!-- Header -->
+  <header>
+    <div class="wrap">
+      <nav>
+        <div class="brand">
+          <div class="logo" title="SMT Club Logo">
+            <!-- Simple atom SVG logo -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="2"/>
+              <path d="M2 12c0-3.5 4.5-6 10-6s10 2.5 10 6-4.5 6-10 6S2 15.5 2 12z"/>
+              <path d="M5 5c2.5 2.5 7 4 7 7s-4.5 4.5-7 7"/>
+              <path d="M19 5c-2.5 2.5-7 4-7 7s4.5 4.5 7 7"/>
+            </svg>
+          </div>
+          <div class="title-group">
+            <div class="title">Science, Mathematics & Technology Club</div>
+            <div class="subtitle">St. Joseph's College Layibi</div>
+          </div>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div id="user-display">Not Signed In</div>
+            <button class="btn" id="auth-button">Sign In / Register</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content (Sections remain the same) -->
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <div>
+        <h1>Empowering minds. Building innovators. Shaping Uganda’s future.</h1>
+        <p>We are the Science, Mathematics & Technology Club at St. Joseph's College Layibi (P.O. Box 123, Gulu City, Uganda).</p>
+        <p>Email: <a href="mailto:smtclubsjcl@gmail.com">smtclubsjcl@gmail.com</a></p>
+        <div class="cta">
+          <a class="btn primary" href="#donate">Donate to support</a>
+          <a class="btn secondary" href="#projects">Explore our projects</a>
+        </div>
+      </div>
+      <div class="card media-card" aria-label="African student scientist">
+        <img src="https://thumbs2.imgbox.com/4d/79/YFApSYB8_t.png" alt="image host"/></a>"</div>
+        <div class="small">Pushing our potential to the limit✨</div>
+      </div>
+    </div>
+    <div class="wrap section">
+      <div class="triplet">
+        <div class="card">
+          <span class="chip red">MISSION</span>
+          <h3>Empower, inspire, uplift</h3>
+          <p>We empower students to explore science, mathematics, and technology, spark curiosity, and build solutions that improve communities.</p>
+        </div>
+        <div class="card">
+          <span class="chip blue">GOAL</span>
+          <h3>Cultivate innovators</h3>
+          <p>We nurture practical skills, leadership, and collaboration so members become confident problem-solvers, creators, and change-makers.</p>
+        </div>
+        <div class="card">
+          <span class="chip yellow">OBJECTIVES</span>
+          <ul class="list">
+            <li class="item"><span class="dot"></span><span>Run hands-on labs, code clubs, and maker challenges.</span></li>
+            <li class="item"><span class="dot"></span><span>Compete and present at national science fairs.</span></li>
+            <li class="item"><span class="dot"></span><span>Mentor juniors, share knowledge, and build community projects.</span></li>
+            <li class="item"><span class="dot"></span><span>Develop the SJCL CubeSat concept and related STEM outreach.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ... (Other sections like #about, #projects, #media, #news, #donate remain the same) ... -->
+
+  <!-- News -->
+  <section id="news" class="section">
+    <div class="wrap grid-2">
+      <div class="card">
+        <h2>News & updates</h2>
+        <div class="list" id="news-list">
+          <!-- Default and local storage news populate here -->
+        </div>
+      </div>
+      <div class="card">
+        <h2>Post an update</h2>
+        <form id="news-form" class="comment-form">
+          <input type="text" id="news-title" placeholder="Headline" required />
+          <textarea id="news-body" rows="3" placeholder="Write a short update…" required></textarea>
+          <div class="cta" style="margin-top:0; justify-content:flex-end;">
+            <button type="submit" class="btn primary">Publish</button>
+          </div>
+          <div class="small">Your updates are saved locally in your browser.</div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Donate -->
+  <section id="donate" class="section">
+    <div class="wrap grid-2">
+      <div class="card">
+        <h2>Donate to the SMT Club</h2>
+        <p>Your support funds tools, components, learning materials, and our SJCL CubeSat concept.</p>
+        <ul class="list">
+          <li class="item"><span class="dot"></span><span>Bank: Centenary</span></li>
+          <li class="item"><span class="dot"></span><span>Account name: SMT Club (SJCL)</span></li>
+          <li class="item"><span class="dot"></span><span>Account number: <strong>3763727634</strong></span></li>
+        </ul>
+        <div class="cta">
+          <a class="btn secondary" href="#contact">Notify us by email after you donate</a>
+        </div>
+        <p class="small">We’ll add mobile money or online payment links once available.</p>
+      </div>
+      <div class="card">
+        <h2>Donation note</h2>
+        <p>After donating, please send the receipt to <a href="mailto:smtclubsjcl@gmail.com">smtclubsjcl@gmail.com</a> with your name and purpose of donation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact / Comments (Updated for Auth) -->
+  <section id="contact" class="section">
+    <div class="wrap grid-2">
+      <div class="card">
+        <h2>Contact us</h2>
+        <p>St. Joseph's College Layibi<br>P.O. Box 123, Gulu City, Uganda</p>
+        <p>Email: <a href="mailto:smtclubsjcl@gmail.com">smtclubsjcl@gmail.com</a></p>
+      </div>
+      <div class="card">
+        <h2>Community Comments</h2>
+        <form id="comment-form" class="comment-form">
+          <!-- The name input now shows the user's email or a placeholder, and is disabled -->
+          <input type="text" id="name" placeholder="Sign in to post a comment" disabled required />
+          <textarea id="message" rows="3" placeholder="Your comment…" disabled required></textarea>
+          <div class="cta" style="margin-top:0; justify-content:space-between;">
+            <div id="comment-loading" class="loading-indicator">
+                <div class="spinner"></div>
+                <span>Posting...</span>
+            </div>
+            <!-- The submit button is disabled until signed in -->
+            <button type="submit" id="post-comment-btn" class="btn primary" disabled>Post comment</button>
+          </div>
+          <p id="auth-prompt" class="small mt-3" style="color:var(--accent1);">Please sign in to post a comment.</p>
+          <div class="small mt-3">Comments are now secured with user authentication.</div>
+        </form>
+        <div id="comments" class="list" style="margin-top:12px">
+            <div class="small text-center mt-2">Loading comments...</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="wrap">
+      © <span id="year"></span> SMT Club — St. Joseph's College Layibi • Built with love and curiosity.
+    </div>
+  </footer>
+
+  <!-- Floating Assistant Icon (Chatbot Removed) -->
+  <button class="chat-toggle-btn" aria-label="Contact Assistant">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+  </button>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Elements
+    const newsForm = document.getElementById('news-form');
+    const newsList = document.getElementById('news-list');
+    const commentForm = document.getElementById('comment-form');
+    const commentsContainer = document.getElementById('comments');
+    const loadingIndicator = document.getElementById('comment-loading');
+    const commentNameInput = document.getElementById('name');
+    const commentMessageInput = document.getElementById('message');
+    const postCommentBtn = document.getElementById('post-comment-btn');
+    const authPrompt = document.getElementById('auth-prompt');
+    const authButton = document.getElementById('auth-button');
+    const userDisplay = document.getElementById('user-display');
+    const authModal = document.getElementById('auth-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    
+    // Auth Form Elements
+    const signInForm = document.getElementById('signin-form');
+    const signUpForm = document.getElementById('signup-form');
+    const signInMsg = document.getElementById('signin-message');
+    const signUpMsg = document.getElementById('signup-message');
+    const authTabs = document.getElementById('auth-tabs');
+
+
+    // ----------------------------------------------------------------
+    // SUPABASE INITIALIZATION & STATE (INTEGRATED CREDENTIALS HERE)
+    // ----------------------------------------------------------------
+    const SUPABASE_URL = 'https://dzkwceduzhgorallwdou.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6a3djZWR1emhnb3JhbGx3ZG91Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExNjA3NzQsImV4cCI6MjA3NjczNjc3NH0.fl-BBRoI_5cXRh3Yuh72usW7cV65F5m_NY9kgKo7-zo';
+    
+    let supabase = null;
+    let currentUser = null; // Stores the current user object
+    
+    if (SUPABASE_URL.includes('YOUR') || SUPABASE_ANON_KEY.includes('YOUR')) {
+        console.error("Supabase Error: Credentials not set.");
+        commentsContainer.innerHTML = '<div class="small text-center mt-2 text-red-400">Database not connected. Check console.</div>';
+    } else {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    
+    // ----------------------------------------------------------------
+    // AUTHENTICATION LOGIC
+    // ----------------------------------------------------------------
+
+    /**
+     * Handles the user state change (login/logout)
+     */
+    function handleUserState(session) {
+        if (session && session.user) {
+            currentUser = session.user;
+            // Update Header UI
+            authButton.textContent = 'Sign Out';
+            // Display the user's email, which acts as their name/identifier
+            userDisplay.textContent = currentUser.email;
+
+            // Update Comment Form UI
+            commentNameInput.value = currentUser.email;
+            commentNameInput.disabled = true;
+            commentMessageInput.disabled = false;
+            postCommentBtn.disabled = false;
+            authPrompt.style.display = 'none';
+
+            console.log("User signed in:", currentUser.id);
+
+        } else {
+            currentUser = null;
+            // Update Header UI
+            authButton.textContent = 'Sign In / Register';
+            userDisplay.textContent = 'Not Signed In';
+
+            // Update Comment Form UI
+            commentNameInput.value = '';
+            commentNameInput.placeholder = 'Sign in to post a comment';
+            commentNameInput.disabled = true;
+            commentMessageInput.disabled = true;
+            postCommentBtn.disabled = true;
+            authPrompt.style.display = 'block';
+
+            console.log("User signed out.");
+        }
+        authModal.classList.remove('visible');
+        fetchComments(); // Reload comments when user state changes
+    }
+
+    /**
+     * Auth Listener
+     */
+    if (supabase) {
+        supabase.auth.onAuthStateChange((event, session) => {
+            handleUserState(session);
+        });
+    }
+
+    // Permanent click handler for the Auth button (FIXED)
+    authButton.addEventListener('click', () => {
+        if (currentUser) {
+            handleSignOut(); // If signed in, log out
+        } else {
+            authModal.classList.add('visible'); // If signed out, open modal
+        }
+    });
+
+    // Modal UI Handlers
+    closeModalBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        authModal.classList.remove('visible');
+    });
+
+    authTabs.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            document.querySelectorAll('.tab-buttons button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+
+            e.target.classList.add('active');
+            document.getElementById(e.target.dataset.tab + '-tab').classList.remove('hidden');
+
+            // Clear messages
+            signInMsg.textContent = '';
+            signUpMsg.textContent = '';
+        }
+    });
+
+    // Sign Up Logic
+    signUpForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        signUpMsg.textContent = '';
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+        
+        if (password.length < 6) {
+            signUpMsg.textContent = 'Password must be at least 6 characters.';
+            return;
+        }
+
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        
+        if (error) {
+            signUpMsg.textContent = 'Error: ' + error.message;
+        } else if (data.user) {
+            signUpMsg.textContent = 'Sign up successful! Please check your email to confirm your account (if email confirmation is required).';
+            signUpForm.reset();
+        }
+    });
+
+    // Sign In Logic
+    signInForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        signInMsg.textContent = '';
+        const email = document.getElementById('signin-email').value;
+        const password = document.getElementById('signin-password').value;
+
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        
+        if (error) {
+            signInMsg.textContent = 'Sign In Failed: ' + error.message;
+        } else {
+            // Success is handled by the onAuthStateChange listener
+            signInForm.reset();
+        }
+    });
+
+    // Sign Out Logic
+    async function handleSignOut() {
+        if (!supabase) return;
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            console.error('Sign Out Error:', error.message);
+        }
+        // State change handled by the listener
+    }
+
+    // ----------------------------------------------------------------
+    // NEWS POSTING (LOCAL STORAGE)
+    // ----------------------------------------------------------------
+    
+    function getStoredItems(key) {
+        try {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : [];
+        } catch (e) {
+            console.error(`Error loading ${key} from localStorage:`, e);
+            return [];
+        }
+    }
+
+    function saveItems(key, items) {
+        try {
+            localStorage.setItem(key, JSON.stringify(items));
+        } catch (e) {
+            console.error(`Error saving ${key} to localStorage:`, e);
+        }
+    }
+
+    let newsItems = getStoredItems('smtClubNews');
+
+    function renderNews() {
+        newsList.innerHTML = '';
+        const existingDefaultNews = [
+            { title: "Club launch", body: "SMT Club kicks off the term with a hands-on electronics bootcamp and math challenge series." },
+            { title: "CubeSat workshop", body: "Avionics team starts prototyping power and communication subsystems." },
+            { title: "Community outreach", body: "Members mentor juniors with weekend labs at SJCL." }
+        ];
+        const allNews = [...newsItems, ...existingDefaultNews];
+        allNews.forEach(item => {
+            const newsItem = document.createElement('div');
+            newsItem.className = 'item';
+            newsItem.innerHTML = `<div class="dot"></div><div><strong>${item.title}</strong> — ${item.body}</div>`;
+            newsList.appendChild(newsItem);
+        });
+    }
+
+    newsForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const title = document.getElementById('news-title').value.trim();
+        const body = document.getElementById('news-body').value.trim();
+
+        if (title && body) {
+            newsItems.unshift({ title, body });
+            saveItems('smtClubNews', newsItems);
+            renderNews();
+            newsForm.reset();
+        }
+    });
+
+    // ----------------------------------------------------------------
+    // COMMENTS LOGIC (SUPABASE - REQUIRES AUTH)
+    // ----------------------------------------------------------------
+
+    /**
+     * Fetches and renders comments from the Supabase 'comments' table.
+     */
+    async function fetchComments() {
+        if (!supabase) return;
+
+        commentsContainer.innerHTML = '<div class="small text-center mt-2"><div class="loading-indicator visible mx-auto"><div class="spinner"></div><span>Loading comments...</span></div></div>';
+
+        try {
+            const { data: comments, error } = await supabase
+                .from('comments')
+                .select('name, message, created_at')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            
+            commentsContainer.innerHTML = '';
+
+            if (comments.length === 0) {
+                commentsContainer.innerHTML = '<div class="small text-center mt-2">No comments yet. Be the first!</div>';
+                return;
+            }
+
+            comments.forEach(c => {
+                const commentEl = document.createElement('div');
+                commentEl.className = 'comment mt-3';
+                
+                // Format timestamp
+                const date = new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                
+                commentEl.innerHTML = `
+                    <p class="small" style="font-weight: 700; color: white;">${c.name} <span style="font-weight: 400; color: var(--muted);">| ${date}</span></p>
+                    <p class="text-sm">${c.message}</p>
+                `;
+                commentsContainer.appendChild(commentEl);
+            });
+
+        } catch (error) {
+            console.error('Error fetching comments:', error.message);
+            commentsContainer.innerHTML = `<div class="small text-center mt-2" style="color:var(--accent1);">Error: Could not load comments (${error.message}). Check RLS Policy and Network connection.</div>`;
+        }
+    }
+
+    commentForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        if (!supabase || !currentUser) return; // Must be signed in
+        
+        const message = commentMessageInput.value.trim();
+
+        if (!message) return;
+
+        loadingIndicator.classList.add('visible');
+
+        try {
+            // Inserts the message and uses the current user's email for the 'name' field
+            // The 'user_id' is automatically populated by the auth.uid() default in the database
+            const { error } = await supabase
+                .from('comments')
+                .insert([
+                    { 
+                      name: currentUser.email, 
+                      message: message 
+                    }
+                ]);
+
+            if (error) throw error;
+
+            commentForm.reset();
+            await fetchComments(); 
+            
+        } catch (error) {
+            console.error('Error posting comment:', error.message);
+            // Using a custom message box (not alert) for better UX
+            const errorMsg = document.createElement('p');
+            errorMsg.className = 'small mt-3';
+            errorMsg.style.color = 'var(--accent1)';
+            errorMsg.textContent = `Failed to post: ${error.message}.`;
+            commentsContainer.appendChild(errorMsg);
+
+        } finally {
+            loadingIndicator.classList.remove('visible');
+        }
+    });
+
+    // Initial load calls
+    document.addEventListener('DOMContentLoaded', () => {
+        renderNews();
+        // Auth Listener handles the first fetchComments() call
+    });
+  </script>
+</body>
+</html>
